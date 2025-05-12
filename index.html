@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>ERP Gastronômico</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Estilos básicos para a interface */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f6f8;
+    }
+    header {
+      background: #2C3E50;
+      color: #fff;
+      text-align: center;
+      padding: 1em;
+    }
+    nav {
+      background: #34495e;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5em;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+      padding: 0.5em 1em;
+    }
+    nav a:hover {
+      background: #2C3E50;
+    }
+    main {
+      padding: 1em;
+    }
+    section {
+      display: none;
+      padding: 1em;
+      background: #fff;
+      margin-bottom: 1em;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    section.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+    th, td {
+      padding: 0.5em;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    input, button {
+      padding: 0.5em;
+      margin: 0.5em 0;
+    }
+    .form-group { margin-bottom: 1em; }
+    .summary {
+      margin-top: 1em;
+      padding: 1em;
+      background: #e2eafc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ERP Gastronômico</h1>
+  </header>
+  <nav>
+    <a onclick="showSection('estoque')">Controle de Estoque</a>
+    <a onclick="showSection('pedidos')">Gestão de Pedidos</a>
+    <a onclick="showSection('financeiro')">Financeiro e Fiscal</a>
+    <a onclick="showSection('relatorios')">Relatórios e Análises</a>
+  </nav>
+  <main>
+    <!-- Seção: Controle de Estoque -->
+    <section id="estoque" class="active">
+      <h2>Controle de Estoque</h2>
+      <p>Monitora ingredientes e evita desperdícios.</p>
+      <table id="inventoryTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ingrediente</th>
+            <th>Quantidade</th>
+            <th>Unidade</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Conteúdo dinâmico -->
+        </tbody>
+      </table>
+      <button onclick="loadInventory()">Atualizar Estoque</button>
+    </section>
+
+    <!-- Seção: Gestão de Pedidos -->
+    <section id="pedidos">
+      <h2>Gestão de Pedidos</h2>
+      <p>Automatiza a entrada de pedidos e integra com delivery.</p>
+      <form id="orderForm" onsubmit="addOrder(event)">
+        <div class="form-group">
+          <label for="cliente">Nome do Cliente:</label>
+          <input type="text" id="cliente" required>
+        </div>
+        <div class="form-group">
+          <label for="itens">Itens (separados por vírgula):</label>
+          <input type="text" id="itens" required>
+        </div>
+        <button type="submit">Adicionar Pedido</button>
+      </form>
+      <table id="ordersTable">
+        <thead>
+          <tr>
+            <th>ID Pedido</th>
+            <th>Cliente</th>
+            <th>Itens</th>
+            <th>Status</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Pedidos dinâmicos -->
+        </tbody>
+      </table>
+      <button onclick="loadOrders()">Atualizar Pedidos</button>
+    </section>
+
+    <!-- Seção: Financeiro e Fiscal -->
+    <section id="financeiro">
+      <h2>Financeiro e Fiscal</h2>
+      <p>Controle receitas, despesas e obrigações fiscais.</p>
+      <form id="financialForm" onsubmit="addTransaction(event)">
+        <div class="form-group">
+          <label for="dataTransacao">Data:</label>
+          <input type="date" id="dataTransacao" required>
+        </div>
+        <div class="form-group">
+          <label for="descricao">Descrição:</label>
+          <input type="text" id="descricao" required>
+        </div>
+        <div class="form-group">
+          <label for="valor">Valor (positivo para receita, negativo para despesa):</label>
+          <input type="number" id="valor" step="0.01" required>
+        </div>
+        <button type="submit">Adicionar Transação</button>
+      </form>
+      <table id="financialTable">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Transações dinâmicas -->
+        </tbody>
+      </table>
+      <div class="summary" id="financialSummary">
+        <!-- Resumo financeiro -->
+      </div>
+      <button onclick="loadTransactions()">Atualizar Transações</button>
+    </section>
+
+    <!-- Seção: Relatórios e Análises -->
+    <section id="relatorios">
+      <h2>Relatórios e Análises</h2>
+      <p>Gera insights sobre vendas, custos e desempenho.</p>
+      <div class="summary" id="reportsSummary">
+        <!-- Resumo dos relatórios -->
+      </div>
+      <button onclick="loadReports()">Atualizar Relatórios</button>
+    </section>
+  </main>
+
+  <script>
+    // Função para navegar entre seções
+    function showSection(sectionId) {
+      document.querySelectorAll("main section").forEach(section => {
+        section.classList.remove("active");
+      });
+      document.getElementById(sectionId).classList.add("active");
+    }
+
+    // Carrega dados do estoque via AJAX
+    function loadInventory() {
+      fetch('inventory.php')
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.querySelector('#inventoryTable tbody');
+          tbody.innerHTML = '';
+          data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${item.id}</td>
+              <td>${item.ingrediente}</td>
+              <td>
+                <input type="number" value="${item.quantidade}" id="qty-${item.id}" style="width:60px;">
+              </td>
+              <td>${item.unidade}</td>
+              <td>
+                <button onclick="updateInventory(${item.id})">Atualizar</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(error => console.error('Erro ao carregar estoque:', error));
+    }
+
+    // Atualiza a quantidade de um ingrediente
+    function updateInventory(id) {
+      const qty = document.getElementById(`qty-${id}`).value;
+      const formData = new FormData();
+      formData.append('id', id);
+      formData.append('quantidade', qty);
+
+      fetch('inventory.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Estoque atualizado com sucesso!');
+          loadInventory();
+        } else {
+          alert('Erro ao atualizar estoque: ' + data.error);
+        }
+      })
+      .catch(error => console.error('Erro ao atualizar estoque:', error));
+    }
+
+    // Adiciona novo pedido
+    function addOrder(event) {
+      event.preventDefault();
+      const cliente = document.getElementById('cliente').value;
+      const itens = document.getElementById('itens').value;
+      const formData = new FormData();
+      formData.append('cliente', cliente);
+      formData.append('itens', itens);
+      formData.append('status', 'Em Preparo'); // status padrão
+
+      fetch('orders.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.success) {
+          alert('Pedido adicionado com sucesso!');
+          document.getElementById('orderForm').reset();
+          loadOrders();
+        } else {
+          alert('Erro ao adicionar pedido: ' + data.error);
+        }
+      })
+      .catch(error => console.error('Erro ao adicionar pedido:', error));
+    }
+
+    // Carrega pedidos
+    function loadOrders() {
+      fetch('orders.php')
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.querySelector('#ordersTable tbody');
+          tbody.innerHTML = '';
+          data.forEach(order => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${order.id}</td>
+              <td>${order.cliente}</td>
+              <td>${order.itens}</td>
+              <td>${order.status}</td>
+              <td>${order.data}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(error => console.error('Erro ao carregar pedidos:', error));
+    }
+
+    // Adiciona nova transação financeira
+    function addTransaction(event) {
+      event.preventDefault();
+      const dataTransacao = document.getElementById('dataTransacao').value;
+      const descricao = document.getElementById('descricao').value;
+      const valor = document.getElementById('valor').value;
+      const formData = new FormData();
+      formData.append('data', dataTransacao);
+      formData.append('descricao', descricao);
+      formData.append('valor', valor);
+
+      fetch('transactions.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Transação adicionada com sucesso!');
+          document.getElementById('financialForm').reset();
+          loadTransactions();
+        } else {
+          alert('Erro ao adicionar transação: ' + data.error);
+        }
+      })
+      .catch(error => console.error('Erro ao adicionar transação:', error));
+    }
+
+    // Carrega transações financeiras
+    function loadTransactions() {
+      fetch('transactions.php')
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.querySelector('#financialTable tbody');
+          tbody.innerHTML = '';
+          data.forEach(tx => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${tx.data}</td>
+              <td>${tx.descricao}</td>
+              <td>${tx.valor}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+          updateFinancialSummary();
+        })
+        .catch(error => console.error('Erro ao carregar transações:', error));
+    }
+
+    // Carrega e exibe relatórios (dados agregados)
+    function loadReports() {
+      fetch('reports.php')
+        .then(response => response.json())
+        .then(data => {
+          const summary = document.getElementById('reportsSummary');
+          summary.innerHTML = `
+            <p>Total de Pedidos: ${data.totalOrders}</p>
+            <p>Receita Total: R$ ${data.totalRevenue}</p>
+            <p>Despesas Totais: R$ ${data.totalExpenses}</p>
+          `;
+        })
+        .catch(error => console.error('Erro ao carregar relatórios:', error));
+    }
+
+    // Atualiza o resumo financeiro na seção financeiro
+    function updateFinancialSummary() {
+      fetch('reports.php')
+        .then(response => response.json())
+        .then(data => {
+          const summary = document.getElementById('financialSummary');
+          summary.innerHTML = `
+            <p>Total de Pedidos: ${data.totalOrders}</p>
+            <p>Receita Total: R$ ${data.totalRevenue}</p>
+            <p>Despesas Totais: R$ ${data.totalExpenses}</p>
+          `;
+        })
+        .catch(error => console.error('Erro ao atualizar resumo financeiro:', error));
+    }
+
+    // Inicializa o carregamento dos dados
+    loadInventory();
+    loadOrders();
+    loadTransactions();
+    loadReports();
+  </script>
+</body>
+</html>
